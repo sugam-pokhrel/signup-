@@ -1,26 +1,32 @@
 const express = require("express");
-const bodyParser = require("body-parser");
-const request = require("request");
 const https = require("https");
-require("dotenv").config();
+const path = require('path');
+const dotenv = require("dotenv");
+const { json, urlencoded } = require("express");
+
+dotenv.config();
 
 const app = express();
+const publicPath = path.join(__dirname, 'public');
 
-app.use(express.static("public"));
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(urlencoded({ extended: true }));
+app.use(express.static(publicPath));
 
-//
-//
-
-app.get("/", function (req, res) {
-  res.sendFile(__dirname + "/index.html");
+app.get("/", (req, res) => {
+  res.sendFile(path.join(publicPath, 'index.html'));
 });
 
-app.post("/", function (req, res) {
+
+
+app.post("/failure", (req, res) => {
+  res.redirect("/");
+});
+
+const handleSubscription = (req, res) => {
   const { firstName, lastName, email, confirmEmail } = req.body;
 
   if (email !== confirmEmail) {
-    res.sendFile(__dirname + "/failuare.html");
+    return res.sendFile(path.join(__dirname, "/failure.html"));
   }
 
   const data = {
@@ -44,24 +50,23 @@ app.post("/", function (req, res) {
     auth: `YangSing:${process.env.api}`,
   };
 
-  const request = https.request(url, options, function (response) {
+  const request = https.request(url, options, (response) => {
     if (response.statusCode === 200) {
-      res.sendFile(__dirname + "/success.html");
+      res.sendFile(path.join(__dirname, "/success.html"));
     } else {
-      res.sendFile(__dirname + "/failuare.html");
+      res.sendFile(path.join(__dirname, "/failure.html"));
     }
 
-    response.on("data", function (data) {});
+    response.on("data", () => {});
   });
 
   request.write(jsonData);
   request.end();
-});
+};
 
-app.post("/failuare", function (req, res) {
-  res.redirect("/");
-});
+const PORT = process.env.PORT || 3000;
 
-app.listen(process.env.PORT || 3000, function () {
-  console.log("Listening at port 3000");
+app.listen(PORT, () => {
+  console.log(`Listening at port ${PORT}`);
 });
+app.post("/", handleSubscription);
