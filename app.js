@@ -23,10 +23,11 @@ app.post("/failure", (req, res) => {
 });
 
 const handleSubscription = (req, res) => {
+  console.log(req.body);
   const { firstName, lastName, email, confirmEmail } = req.body;
 
   if (email !== confirmEmail) {
-    return res.sendFile(path.join(__dirname, "/failure.html"));
+    return res.sendFile(path.join(publicPath, 'failuare.html'));
   }
 
   const data = {
@@ -69,4 +70,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Listening at port ${PORT}`);
 });
-app.post("/", handleSubscription);
+app.post("/", (req,res)=>handleSubscription(req,res));
